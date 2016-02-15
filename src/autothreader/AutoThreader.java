@@ -26,7 +26,10 @@ import soot.jimple.StaticInvokeExpr;
 
 public class AutoThreader {
 	public static final void main(String[] args) throws IOException {
-		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + ":./src");
+		String srcPath = System.getProperty("os.name").toLowerCase().contains("windows") ? 
+				";.\\src":"./src";//for the sake of development comfort..
+		
+		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + srcPath);
 		System.out.println(Scene.v().getSootClassPath());
 		
 		SootClass c = Scene.v().loadClassAndSupport("test.Test1");

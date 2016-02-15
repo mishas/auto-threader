@@ -21,3 +21,4 @@ src/sootOutput/
 # Eclipse
 bin/
 tmp/
+/.classpath
