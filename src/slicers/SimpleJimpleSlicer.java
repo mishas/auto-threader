@@ -1,13 +1,15 @@
-package autothreader;
+package slicers;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import soot.Body;
 import soot.PatchingChain;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import util.DirectedGraph;
 
 public class SimpleJimpleSlicer {
 
@@ -28,12 +30,14 @@ public class SimpleJimpleSlicer {
 		List<ValueBox> defined;
 		Value defVal;
 		Value usedVal;
-		//TODO  this is not correct yet- must handle loops and conditionals correctly and maybe procedure inline
+		//TODO  this is not correct yet-
+		//TODO  must handle loops and conditionals correctly and maybe procedure inline
+		//TODO  destructive update: remove edges when needed
+		//TODO  
 		for (Unit u : pc) {
 			used = u.getUseBoxes();
 			defined = u.getDefBoxes();
 			
-			System.out.println("Unit: "+u.toString());
 			for (ValueBox vbd : defined){
 				defVal = vbd.getValue();
 				g.addVertex(defVal);

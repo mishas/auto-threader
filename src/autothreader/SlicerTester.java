@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import slicers.JimpleFutureTagger;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Modifier;
@@ -73,7 +74,8 @@ public class SlicerTester {
 			assert "main".equals(b.getMethod().getName());
 			
 			System.out.println("TRANSFORM!");
-			SimpleJimpleSlicer sjp = new SimpleJimpleSlicer(b);
+			//SimpleJimpleSlicer sjp = new SimpleJimpleSlicer(b);
+			JimpleFutureTagger jft = new JimpleFutureTagger(b);
 			System.out.println("Transform done.");
 
 		}

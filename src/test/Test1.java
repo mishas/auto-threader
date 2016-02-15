@@ -6,8 +6,9 @@ public class Test1 {
 	
 	public final static void main(String[] args) throws InterruptedException {
 		long start = System.currentTimeMillis();
-
-		int a = heavyFunc();
+		int y=(int) Math.random();
+		y=(int) Math.random();
+		int a = heavyFunc(y);
 		/*
 		Future<Integer> a = Threader.thread(new Callable<Integer>() {
 			@Override
@@ -16,12 +17,12 @@ public class Test1 {
 			}
 		});
 		*/ 
-		int b = heavyFunc();
+		int b = heavyFunc(a);
 		System.out.println((a+b) + " " + (System.currentTimeMillis() - start));
 		// System.out.println((a.get()+b) + " " + (System.currentTimeMillis() - start));
 	}
 	
-	public static int heavyFunc() throws InterruptedException {
+	public static int heavyFunc(int a) throws InterruptedException {
 		Thread.sleep(1000);
 		return new Random().nextInt();
 	}
