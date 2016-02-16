@@ -32,7 +32,7 @@ public class SlicerTester {
 		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + srcPath);
 		System.out.println(Scene.v().getSootClassPath());
 
-		SootClass c = Scene.v().loadClassAndSupport("test.Test1");
+		SootClass c = Scene.v().loadClassAndSupport("test.Test2");
 		Scene.v().addBasicClass("java.util.concurrent.ExecutorService", SootClass.SIGNATURES);
 		Scene.v().addBasicClass("java.util.concurrent.Executors", SootClass.SIGNATURES);
 		Scene.v().loadNecessaryClasses();

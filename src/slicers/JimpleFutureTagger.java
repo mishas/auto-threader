@@ -12,14 +12,19 @@ import soot.PatchingChain;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import soot.toolkits.graph.Block;
+import soot.toolkits.graph.BlockGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.MHGPostDominatorsFinder;
+import soot.toolkits.graph.UnitGraph;
+import soot.toolkits.graph.pdg.HashMutablePDG;
 import util.DependentsTag;
 
 public class JimpleFutureTagger {
 
 	private Body b;
-
+	private HashMutablePDG pdg;
+	private ExceptionalUnitGraph g;
 	/**
 	 * Tag only Units that are in pc. The units in pc are meant to be
 	 * auto-threaded therefore need to be tagged with units they affect
@@ -31,12 +36,18 @@ public class JimpleFutureTagger {
 	 */
 	public JimpleFutureTagger(Body b, PatchingChain<Unit> pc) {
 		this.b = b;
+		initialize();
 		onePassTag(pc);
 	}
 
 	public JimpleFutureTagger(Body b) {
 		this.b = b;
+		initialize();
 		onePassTag(this.b.getUnits());
+	}
+	private void initialize(){
+		g= new ExceptionalUnitGraph(b);
+		pdg = new HashMutablePDG(g);
 	}
 	/**
 	 * same as tag()
@@ -47,8 +58,9 @@ public class JimpleFutureTagger {
 		List<ValueBox> defBoxes;
 		List<ValueBox> useBoxes;
 		
+		
 		//calculate dominator relations
-		MHGPostDominatorsFinder postDomFinder = new MHGPostDominatorsFinder(new ExceptionalUnitGraph(b));
+		MHGPostDominatorsFinder postDomFinder = new MHGPostDominatorsFinder(g);
 		
 		for(Unit u:b.getUnits()){
 
@@ -84,6 +96,10 @@ public class JimpleFutureTagger {
 					if(localsOfInterest.keySet().contains(l)){
 						Set<Unit> defUnits = localsOfInterest.get(l);
 						for(Unit defUnit:defUnits){
+							//for cases like def before conditional that defines all
+							if(defInAllPaths(defUnit,u,l,localsOfInterest))
+								localsOfInterest.get(l).remove(defUnit);
+							
 							if(!defUnit.hasTag(DependentsTag.name))
 								defUnit.addTag(new DependentsTag());
 							((DependentsTag) defUnit.getTag(DependentsTag.name)).addDependent(useVB, u);
@@ -96,6 +112,27 @@ public class JimpleFutureTagger {
 			}
 		}
 	}
+	
+	private boolean defInAllPaths(Unit defUnit, Unit u, Local l,Map<Local,Set<Unit>> localsOfInterest) {
+		List<Unit> path;
+		for(Unit succ:g.getSuccsOf(defUnit)){
+			path=null;//TODO no good. find all paths, really. = g.getExtendedBasicBlockPathBetween(succ,u);
+			if(!isDefInPath(path,l))
+				return false;
+		}			
+		return true;
+	}
+
+	private boolean isDefInPath(List<Unit> path, Local l) {
+		for(Unit u:path){
+			List<ValueBox> defBoxes = u.getDefBoxes();
+			for(ValueBox vb:defBoxes)
+				if(vb.getValue() == l)
+					return true;
+		}
+		return false;		
+	}
+
 	/**
 	 * Tag each assignment of variable with a set of all statements that read
 	 * this variable later in the program
