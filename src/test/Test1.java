@@ -18,6 +18,8 @@ public class Test1 {
 		});
 		*/ 
 		int b = heavyFunc(a);
+		y=(int) Math.random();
+		a = heavyFunc(y);
 		System.out.println((a+b) + " " + (System.currentTimeMillis() - start));
 		// System.out.println((a.get()+b) + " " + (System.currentTimeMillis() - start));
 	}

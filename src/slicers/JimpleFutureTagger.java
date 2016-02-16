@@ -1,14 +1,19 @@
 package slicers;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import soot.Body;
 import soot.Local;
 import soot.PatchingChain;
 import soot.Unit;
+import soot.Value;
 import soot.ValueBox;
+import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.toolkits.graph.MHGPostDominatorsFinder;
 import util.DependentsTag;
 
 public class JimpleFutureTagger {
@@ -26,14 +31,71 @@ public class JimpleFutureTagger {
 	 */
 	public JimpleFutureTagger(Body b, PatchingChain<Unit> pc) {
 		this.b = b;
-		tag(pc);
+		onePassTag(pc);
 	}
 
 	public JimpleFutureTagger(Body b) {
 		this.b = b;
-		tag(this.b.getUnits());
+		onePassTag(this.b.getUnits());
 	}
+	/**
+	 * same as tag()
+	 * @param pc
+	 */
+	private void onePassTag(PatchingChain<Unit> pc){
+		Map<Local,Set<Unit>> localsOfInterest = new HashMap<Local,Set<Unit>>();//variable to defining unit
+		List<ValueBox> defBoxes;
+		List<ValueBox> useBoxes;
+		
+		//calculate dominator relations
+		MHGPostDominatorsFinder postDomFinder = new MHGPostDominatorsFinder(new ExceptionalUnitGraph(b));
+		
+		for(Unit u:b.getUnits()){
 
+			if(pc.contains(u)){//def locals are of interest here
+				defBoxes = u.getDefBoxes();
+				for (ValueBox defVB : defBoxes){
+					Value defVal = defVB.getValue();
+					if(defVal instanceof Local){
+						Local l = (Local)defVal;
+						if(!localsOfInterest.containsKey(l))
+							localsOfInterest.put(l, new HashSet<Unit>());
+						Set<Unit> preDefUnits = localsOfInterest.get(l);
+						
+						//destructive only of u is post-dominator to previous assignment
+						for(Unit preDef:preDefUnits)
+							if(postDomFinder.isDominatedBy(preDef, u))
+								preDefUnits.remove(preDef);
+						preDefUnits.add(u);
+					}
+					else
+						System.out.println("Non-local daf value: "+defVal);
+				}					
+			}
+			
+			useBoxes = u.getUseBoxes();
+			if(useBoxes.isEmpty())
+				continue;
+			
+			for(ValueBox useVB:useBoxes){
+				Value useVal = useVB.getValue();
+				if(useVal instanceof Local){
+					Local l = (Local) useVal;
+					if(localsOfInterest.keySet().contains(l)){
+						Set<Unit> defUnits = localsOfInterest.get(l);
+						for(Unit defUnit:defUnits){
+							if(!defUnit.hasTag(DependentsTag.name))
+								defUnit.addTag(new DependentsTag());
+							((DependentsTag) defUnit.getTag(DependentsTag.name)).addDependent(useVB, u);
+							System.out.println("Unit "+u+"\n\tdepends on unit\n\t"+defUnit+"\n\twith local "+l);
+						}
+					}
+				}
+				else
+					System.out.println("Non-local use value: "+useVal);
+			}
+		}
+	}
 	/**
 	 * Tag each assignment of variable with a set of all statements that read
 	 * this variable later in the program
@@ -42,11 +104,6 @@ public class JimpleFutureTagger {
 	 *            The statements we want to tag, i.e. find out who depends on.
 	 *            The method calls we want to auto-thread.
 	 */
-	// TODO address loops, conditionals
-	// TODO think different in order to improve time- hold list of defined
-	// locals, each local points to the defining unit. for every line update the
-	// relevant defining unit if needed and tag according to used locals and
-	// defining units. build the same tag
 	private void tag(PatchingChain<Unit> pc) {
 		List<ValueBox> defBoxes;// all defined locals in a unit
 		List<ValueBox> usedBoxes;// all used locals in a unit
