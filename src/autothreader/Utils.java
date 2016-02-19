@@ -1,5 +1,6 @@
 package autothreader;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -165,6 +166,7 @@ public class Utils {
 	
 	private void writeClassFile(SootClass cls) throws IOException {
 		String fileName = SourceLocator.v().getFileNameFor(cls, Options.output_format_class);
+		new File(new File(fileName).getParent()).mkdirs();
 		OutputStream streamOut = new JasminOutputStream(new FileOutputStream(fileName));
 		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
 		JasminClass jasminClass = new soot.jimple.JasminClass(cls);
