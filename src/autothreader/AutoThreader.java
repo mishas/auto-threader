@@ -22,7 +22,10 @@ import soot.jimple.toolkits.scalar.pre.SootFilter;
 
 public class AutoThreader {
 	public static final void main(String[] args) throws IOException {
-		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + ":./src");
+		String srcPath = System.getProperty("os.name").toLowerCase().contains("windows") ? 
+				";.\\src":"./src";//for the sake of development comfort..
+		
+		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + srcPath);
 		
 		SootClass c = Scene.v().loadClassAndSupport("test.Test1");
 		Scene.v().addBasicClass("java.util.concurrent.ExecutorService", SootClass.SIGNATURES);
