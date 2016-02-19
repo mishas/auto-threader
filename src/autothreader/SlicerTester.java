@@ -23,11 +23,6 @@ import soot.jimple.Jimple;
 public class SlicerTester {
 	public static final void main(String[] args) throws IOException {
 		String srcPath = System.getProperty("os.name").toLowerCase().contains("windows") ? ";.\\src" : "./src";// for
-																												// the
-																												// sake
-																												// of
-																												// development
-																												// comfort..
 
 		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + srcPath);
 		System.out.println(Scene.v().getSootClassPath());
