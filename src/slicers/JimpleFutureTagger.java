@@ -12,6 +12,7 @@ import soot.PatchingChain;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import soot.jimple.AssignStmt;
 import soot.toolkits.graph.Block;
 import soot.toolkits.graph.BlockGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
@@ -63,7 +64,8 @@ public class JimpleFutureTagger {
 		MHGPostDominatorsFinder postDomFinder = new MHGPostDominatorsFinder(g);
 		
 		for(Unit u:b.getUnits()){
-
+			if(!(u instanceof AssignStmt))
+				continue;
 			if(pc.contains(u)){//def locals are of interest here
 				defBoxes = u.getDefBoxes();
 				for (ValueBox defVB : defBoxes){
@@ -80,8 +82,9 @@ public class JimpleFutureTagger {
 								preDefUnits.remove(preDef);
 						preDefUnits.add(u);
 					}
-					else
-						System.out.println("Non-local daf value: "+defVal);
+					else{
+						//System.out.println("Non-local daf value: "+defVal);
+					}
 				}					
 			}
 			
@@ -103,14 +106,16 @@ public class JimpleFutureTagger {
 							if(!defUnit.hasTag(DependentsTag.name))
 								defUnit.addTag(new DependentsTag());
 							((DependentsTag) defUnit.getTag(DependentsTag.name)).addDependent(useVB, u);
-							System.out.println("Unit "+u+"\n\tdepends on unit\n\t"+defUnit+"\n\twith local "+l);
+							//System.out.println("Unit "+u+"\n\tdepends on unit\n\t"+defUnit+"\n\twith local "+l);
 						}
 					}
 				}
-				else
-					System.out.println("Non-local use value: "+useVal);
+				else{
+					//System.out.println("Non-local use value: "+useVal);
+				}
 			}
 		}
+		System.out.println("Done tagging.");
 	}
 	
 	private boolean defInAllPaths(Unit defUnit, Unit u, Local l,Map<Local,Set<Unit>> localsOfInterest) {
@@ -124,6 +129,7 @@ public class JimpleFutureTagger {
 	}
 
 	private boolean isDefInPath(List<Unit> path, Local l) {
+		if(path==null) return false;
 		for(Unit u:path){
 			List<ValueBox> defBoxes = u.getDefBoxes();
 			for(ValueBox vb:defBoxes)
