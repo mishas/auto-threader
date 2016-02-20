@@ -21,7 +21,6 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.toolkits.scalar.pre.SootFilter;
-import util.DependentsTag;
 
 public class AutoThreader {
 	public static final void main(String[] args) throws IOException {
@@ -65,17 +64,7 @@ public class AutoThreader {
 				// TODO: What if we don't have a main method in this class?
 				Utils.v().addFinalizer(b, esLocal, pc);
 			}
-
-			for (Unit u : new LinkedList<Unit>(pc)) {
-				System.out.println(b.getMethod().getName() + "    " + u.getTag(DependentsTag.name) + " ==== " + u);
-
-				DependentsTag tag = (DependentsTag) u.getTag(DependentsTag.name);
-				if (tag == null) {
-					continue;
-				}
-				System.out.println("      " + tag.getDependents());
-			}
-
+			
 			for (Unit u : new LinkedList<Unit>(pc)) {
 				// TODO(Ron): This needs to be done only to lines which needs to be extracted into threads.
 				if (u instanceof AssignStmt) {

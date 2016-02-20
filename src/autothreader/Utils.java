@@ -114,6 +114,7 @@ public class Utils {
 		Local callableInstance = Jimple.v().newLocal("temp$callable" + Math.abs(rand.nextInt()), anonClass.getInterfaces().getFirst().getType());
 		body.getLocals().add(callableInstance);
 		AssignStmt assignStmt = Jimple.v().newAssignStmt(callableInstance, Jimple.v().newNewExpr(anonClass.getType()));
+		System.out.println(unit);
 		pc.insertBefore(assignStmt, unit);
 
 		SpecialInvokeExpr invokeCtorExpr = Jimple.v().newSpecialInvokeExpr(callableInstance, anonClass.getMethodByName("<init>").makeRef());
