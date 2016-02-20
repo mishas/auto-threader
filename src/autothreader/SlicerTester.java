@@ -22,12 +22,12 @@ import soot.jimple.Jimple;
 
 public class SlicerTester {
 	public static final void main(String[] args) throws IOException {
-		String srcPath = System.getProperty("os.name").toLowerCase().contains("windows") ? ";.\\src" : "./src";// for
+		String srcPath = System.getProperty("os.name").toLowerCase().contains("windows") ? ";.\\src" : ":./src";// for
 
 		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + srcPath);
 		System.out.println(Scene.v().getSootClassPath());
 
-		SootClass c = Scene.v().loadClassAndSupport("test.Test2");
+		SootClass c = Scene.v().loadClassAndSupport("test.Test1");
 		Scene.v().addBasicClass("java.util.concurrent.ExecutorService", SootClass.SIGNATURES);
 		Scene.v().addBasicClass("java.util.concurrent.Executors", SootClass.SIGNATURES);
 		Scene.v().loadNecessaryClasses();
