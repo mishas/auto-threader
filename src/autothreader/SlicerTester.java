@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import slicers.JimpleFutureTagger;
+import slicers.SimpleJimpleSlicer;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Modifier;
@@ -18,6 +19,7 @@ import soot.Transform;
 import soot.Type;
 import soot.Unit;
 import soot.VoidType;
+import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 
 public class SlicerTester {
@@ -27,7 +29,7 @@ public class SlicerTester {
 		Scene.v().setSootClassPath(Scene.v().defaultClassPath() + srcPath);
 		System.out.println(Scene.v().getSootClassPath());
 
-		SootClass c = Scene.v().loadClassAndSupport("test.Test1");
+		SootClass c = Scene.v().loadClassAndSupport("test.Test3");
 		Scene.v().addBasicClass("java.util.concurrent.ExecutorService", SootClass.SIGNATURES);
 		Scene.v().addBasicClass("java.util.concurrent.Executors", SootClass.SIGNATURES);
 		Scene.v().loadNecessaryClasses();
@@ -69,8 +71,11 @@ public class SlicerTester {
 			assert "main".equals(b.getMethod().getName());
 			
 			System.out.println("TRANSFORM!");
-			//SimpleJimpleSlicer sjp = new SimpleJimpleSlicer(b);
-			JimpleFutureTagger jft = new JimpleFutureTagger(b);
+			SimpleJimpleSlicer sjp = new SimpleJimpleSlicer(b);
+			for(Unit u:b.getUnits())
+				if(u instanceof AssignStmt)
+					sjp.slice(u);
+			//JimpleFutureTagger jft = new JimpleFutureTagger(b);
 			System.out.println("Transform done.");
 
 		}

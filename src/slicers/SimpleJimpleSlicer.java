@@ -27,12 +27,9 @@ public class SimpleJimpleSlicer {
 
 	public SimpleJimpleSlicer(Body b) {
 		this.b = b;
-		for(Unit u:b.getUnits())
-			if(u instanceof InvokeStmt)
-				slice(u);
 	}
 
-	private void slice(Unit u) {
+	public void slice(Unit u) {
 		System.out.println("SLICING on "+u);
 		HashMutablePDG pdg = new HashMutablePDG(new ExceptionalUnitGraph(b));
 		BlockGraph bg = pdg.getBlockGraph();
@@ -54,7 +51,10 @@ public class SimpleJimpleSlicer {
 			if(size<preds.size())
 				changed=true;			
 		}
-		System.out.println("preds: "+preds);
+		System.out.println("preds: ");
+		for(Unit u3:preds)
+			System.out.println(u3);
+		System.out.println();
 		System.out.println("Slicing done.");
 	}
 }
