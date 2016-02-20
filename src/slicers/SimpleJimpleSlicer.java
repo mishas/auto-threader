@@ -1,5 +1,6 @@
 package slicers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,12 @@ import soot.PatchingChain;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import soot.jimple.InvokeStmt;
+import soot.toolkits.graph.Block;
+import soot.toolkits.graph.BlockGraph;
+import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.toolkits.graph.UnitGraph;
+import soot.toolkits.graph.pdg.HashMutablePDG;
 import util.DirectedGraph;
 
 public class SimpleJimpleSlicer {
@@ -18,38 +25,32 @@ public class SimpleJimpleSlicer {
 
 	public SimpleJimpleSlicer(Body b) {
 		this.b = b;
-		slice();
+		for(Unit u:b.getUnits())
+			if(u instanceof InvokeStmt)
+				slice(u);
 	}
 
-	private void slice() {
-		System.out.println("Slicing.");
-		
-		DirectedGraph<Value> g = new DirectedGraph<>();
-		PatchingChain<Unit> pc = this.b.getUnits();
-		List<ValueBox> used;
-		List<ValueBox> defined;
-		Value defVal;
-		Value usedVal;
-		//TODO  this is not correct yet-
-		//TODO  must handle loops and conditionals correctly and maybe procedure inline
-		//TODO  destructive update: remove edges when needed
-		//TODO  
-		for (Unit u : pc) {
-			used = u.getUseBoxes();
-			defined = u.getDefBoxes();
-			
-			for (ValueBox vbd : defined){
-				defVal = vbd.getValue();
-				g.addVertex(defVal);
-				for (ValueBox vbu : used){
-					//TODO check if method, if so take only arguments recursively using a help method
-					usedVal = vbu.getValue();
-					g.addVertex(usedVal);
-					g.addEdge(defVal, usedVal);
-				}
+	private void slice(Unit u) {
+		System.out.println("SLICING on "+u);
+		HashMutablePDG pdg = new HashMutablePDG(new ExceptionalUnitGraph(b));
+		BlockGraph bg = pdg.getBlockGraph();
+		UnitGraph cfg = pdg.getCFG();
+		Unit a=cfg.getTails().get(0);
+		List<Unit> preds = new ArrayList<Unit>();
+		preds.add(u);
+		preds.addAll(cfg.getPredsOf(u));
+		boolean changed = true;
+		int size=0;
+		while(changed == true){
+			changed=false;
+			for(Unit u2:preds){
+				size = preds.size();
+				preds.addAll(cfg.getPredsOf(u2));
+				if(preds.size()>size)
+					changed = true;
 			}
 		}
-		System.out.println(g.toString());
-		System.out.println("Done slicing.");
+		System.out.println("preds: "+preds);
+		System.out.println("Slicing done.");
 	}
 }
