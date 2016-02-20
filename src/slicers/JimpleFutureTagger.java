@@ -70,7 +70,8 @@ public class JimpleFutureTagger {
 						&& stmt.getInvokeExpr().getArgCount() == 0
 						&& !stmt.getInvokeExpr().getMethod().isNative()
 						&& !b.getMethod().getName().equals(SootMethod.staticInitializerName)){
-					Value defVal = stmt.getLeftOp();
+					assert pc.getSuccOf(u) instanceof AssignStmt;
+					Value defVal = ((AssignStmt) pc.getSuccOf(u)).getLeftOp();
 					if(defVal instanceof Local){
 						Local l = (Local)defVal;
 						if(!localsOfInterest.containsKey(l))
@@ -102,7 +103,7 @@ public class JimpleFutureTagger {
 								localsOfInterest.get(l).remove(defUnit);
 							
 							if(!defUnit.hasTag(DependentsTag.name))
-								defUnit.addTag(new DependentsTag());
+								defUnit.addTag(new DependentsTag(useVal, useVal.getType()));
 							((DependentsTag) defUnit.getTag(DependentsTag.name)).addDependent(u);
 							//System.out.println("Unit "+u+"\n\tdepends on unit\n\t"+defUnit+"\n\twith local "+l);
 						}
