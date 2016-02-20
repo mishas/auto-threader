@@ -13,6 +13,7 @@ import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
 import soot.jimple.AssignStmt;
+import soot.jimple.InvokeStmt;
 import soot.toolkits.graph.Block;
 import soot.toolkits.graph.BlockGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
@@ -38,23 +39,25 @@ public class JimpleFutureTagger {
 	public JimpleFutureTagger(Body b, PatchingChain<Unit> pc) {
 		this.b = b;
 		initialize();
-		onePassTag(pc);
 	}
 
 	public JimpleFutureTagger(Body b) {
 		this.b = b;
 		initialize();
-		onePassTag(this.b.getUnits());
 	}
 	private void initialize(){
 		g= new ExceptionalUnitGraph(b);
 		pdg = new HashMutablePDG(g);
 	}
 	/**
-	 * same as tag()
+	 * Tag each assignment of variable with a set of all statements that read
+	 * this variable later in the program
+	 * 
 	 * @param pc
+	 *            The statements we want to tag, i.e. find out who depends on.
+	 *            The method calls we want to auto-thread.
 	 */
-	private void onePassTag(PatchingChain<Unit> pc){
+	public void onePassTag(PatchingChain<Unit> pc){
 		Map<Local,Set<Unit>> localsOfInterest = new HashMap<Local,Set<Unit>>();//variable to defining unit
 		List<ValueBox> defBoxes;
 		List<ValueBox> useBoxes;
@@ -64,9 +67,7 @@ public class JimpleFutureTagger {
 		MHGPostDominatorsFinder postDomFinder = new MHGPostDominatorsFinder(g);
 		
 		for(Unit u:b.getUnits()){
-			if(!(u instanceof AssignStmt))
-				continue;
-			if(pc.contains(u)){//def locals are of interest here
+			if(pc.contains(u) && u instanceof AssignStmt){//def locals are of interest here
 				defBoxes = u.getDefBoxes();
 				for (ValueBox defVB : defBoxes){
 					Value defVal = defVB.getValue();
@@ -139,14 +140,7 @@ public class JimpleFutureTagger {
 		return false;		
 	}
 
-	/**
-	 * Tag each assignment of variable with a set of all statements that read
-	 * this variable later in the program
-	 * 
-	 * @param pc
-	 *            The statements we want to tag, i.e. find out who depends on.
-	 *            The method calls we want to auto-thread.
-	 */
+	/*
 	private void tag(PatchingChain<Unit> pc) {
 		List<ValueBox> defBoxes;// all defined locals in a unit
 		List<ValueBox> usedBoxes;// all used locals in a unit
@@ -205,7 +199,7 @@ public class JimpleFutureTagger {
 			 * "\tLocal: "+vb.getValue().toString()); for(Unit
 			 * dep:dt.getDependents().get(vb)) System.out.println("\t\t\t"+dep);
 			 * }
-			 */
+			 
 		}
 	}
 
@@ -214,4 +208,5 @@ public class JimpleFutureTagger {
 				? u1.getJavaSourceStartColumnNumber() < u2.getJavaSourceStartColumnNumber()
 				: u1.getJavaSourceStartLineNumber() < u2.getJavaSourceStartLineNumber();
 	}
+	*/
 }

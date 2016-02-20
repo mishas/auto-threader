@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Map;
 
+import slicers.JimpleFutureTagger;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Local;
@@ -18,6 +19,7 @@ import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
+import soot.jimple.StaticInvokeExpr;
 import soot.jimple.toolkits.scalar.pre.SootFilter;
 
 public class AutoThreader {
@@ -48,6 +50,9 @@ public class AutoThreader {
 		@Override
 		protected void internalTransform(Body b, String phaseName, Map<String, String> options) {
 			PatchingChain<Unit> pc = b.getUnits();
+			
+			JimpleFutureTagger jft = new JimpleFutureTagger(b);
+			jft.onePassTag(pc);
 
 			if (SootMethod.staticInitializerName.equals(b.getMethod().getName())) {
 				Utils.v().addExecutorField(b, pc);
@@ -58,19 +63,23 @@ public class AutoThreader {
 				esLocal = Utils.v().addEsLocal(b, pc);
 				// TODO: What if we don't have a main method in this class?
 				Utils.v().addFinalizer(b, esLocal, pc);
-			} 
+			}
 			
 			for (Unit u : new LinkedList<Unit>(pc)) {
 				// TODO(Ron): This needs to be done only to lines which needs to be extracted into threads.
 				if (u instanceof AssignStmt) {
-					if (((AssignStmt) u).containsInvokeExpr()) {
-						if ("heavyFunc".equals(((AssignStmt) u).getInvokeExpr().getMethod().getName())) {
-							if ("main".equals(b.getMethod().getName())) {
-								if (esLocal == null) {
-									esLocal = Utils.v().addEsLocal(b, pc);
-								}
-								Utils.v().toThread(b, u, esLocal, pc);
+					AssignStmt stmt = (AssignStmt) u;
+					if (stmt.containsInvokeExpr()
+							&& (stmt.getInvokeExpr() instanceof StaticInvokeExpr)
+							&& stmt.getInvokeExpr().getArgCount() == 0
+							&& !stmt.getInvokeExpr().getMethod().isNative()
+							&& !b.getMethod().getName().equals(SootMethod.staticInitializerName)) {
+						if (stmt.getInvokeExpr().getArgCount() == 0) {
+							System.out.println(b.getMethod().getName() + "   " + u);
+							if (esLocal == null) {
+								esLocal = Utils.v().addEsLocal(b, pc);
 							}
+							Utils.v().toThread(b, u, esLocal, pc);
 						}
 					}
 				}
@@ -88,6 +97,5 @@ public class AutoThreader {
 			
 			System.out.println("Done processing " + b.getMethod());
 		}
-
 	}
 }
