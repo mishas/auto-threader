@@ -1,6 +1,7 @@
 package autothreader;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -14,13 +15,13 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Transform;
+import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
-import soot.jimple.StaticInvokeExpr;
-import soot.jimple.toolkits.scalar.pre.SootFilter;
+import util.DependentsTag;
 
 public class AutoThreader {
 	public static final void main(String[] args) throws IOException {
@@ -57,7 +58,7 @@ public class AutoThreader {
 			if (SootMethod.staticInitializerName.equals(b.getMethod().getName())) {
 				Utils.v().addExecutorField(b, pc);
 			}
-			
+
 			Local esLocal = null;
 			if ("main".equals(b.getMethod().getName())) {
 				esLocal = Utils.v().addEsLocal(b, pc);
@@ -65,6 +66,36 @@ public class AutoThreader {
 				Utils.v().addFinalizer(b, esLocal, pc);
 			}
 			
+			Map<Value, Type> toBoxValue = new HashMap<>();
+			for (Unit u : new LinkedList<Unit>(pc)) {
+				DependentsTag tag = (DependentsTag) u.getTag(DependentsTag.name);
+				
+				if (tag == null) {
+					continue;
+				}
+				
+				for (Unit toBoxUnit : tag.getDependents()) {
+					toBoxValue.put(((AssignStmt) toBoxUnit).getLeftOp(), ((AssignStmt) toBoxUnit).getLeftOp().getType());
+				}
+
+				if (esLocal == null) {
+					esLocal = Utils.v().addEsLocal(b, pc);
+				}
+				Utils.v().toThread(b, u, esLocal, pc);
+			}
+			
+			for (Unit u : new LinkedList<Unit>(pc)) {
+				if (u instanceof InvokeStmt)  {
+					InvokeExpr invokeExpr = ((InvokeStmt) u).getInvokeExpr();
+					for (Value v : invokeExpr.getArgs()) {
+						if (toBoxValue.keySet().contains(v)) {
+							Utils.v().fixCallsite(b, u, v, toBoxValue.get(v), pc);
+						}
+					}
+				}
+			}
+			
+			/*
 			for (Unit u : new LinkedList<Unit>(pc)) {
 				// TODO(Ron): This needs to be done only to lines which needs to be extracted into threads.
 				if (u instanceof AssignStmt) {
@@ -75,7 +106,6 @@ public class AutoThreader {
 							&& !stmt.getInvokeExpr().getMethod().isNative()
 							&& !b.getMethod().getName().equals(SootMethod.staticInitializerName)) {
 						if (stmt.getInvokeExpr().getArgCount() == 0) {
-							System.out.println(b.getMethod().getName() + "   " + u);
 							if (esLocal == null) {
 								esLocal = Utils.v().addEsLocal(b, pc);
 							}
@@ -94,6 +124,7 @@ public class AutoThreader {
 					}
 				}
 			}
+			*/
 			
 			System.out.println("Done processing " + b.getMethod());
 		}

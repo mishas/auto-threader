@@ -9,7 +9,8 @@ public class Test1 {
 
 		Integer a = heavyFunc();
 		Integer b = heavyFunc();
-		System.out.println(a + " " + b + " " + (System.currentTimeMillis() - start));
+		Integer c = heavyFunc();
+		System.out.println(a + " " + b + " " + c + " " + (System.currentTimeMillis() - start));
 	}
 	
 	public static Integer heavyFunc() throws InterruptedException {

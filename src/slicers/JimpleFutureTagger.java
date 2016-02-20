@@ -14,13 +14,9 @@ import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
 import soot.jimple.AssignStmt;
-import soot.jimple.InvokeStmt;
 import soot.jimple.StaticInvokeExpr;
-import soot.toolkits.graph.Block;
-import soot.toolkits.graph.BlockGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.MHGPostDominatorsFinder;
-import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.graph.pdg.HashMutablePDG;
 import util.DependentsTag;
 
@@ -61,9 +57,7 @@ public class JimpleFutureTagger {
 	 */
 	public void onePassTag(PatchingChain<Unit> pc){
 		Map<Local,Set<Unit>> localsOfInterest = new HashMap<Local,Set<Unit>>();//variable to defining unit
-		List<ValueBox> defBoxes;
 		List<ValueBox> useBoxes;
-		
 		
 		//calculate dominator relations
 		MHGPostDominatorsFinder postDomFinder = new MHGPostDominatorsFinder(g);
@@ -76,23 +70,20 @@ public class JimpleFutureTagger {
 						&& stmt.getInvokeExpr().getArgCount() == 0
 						&& !stmt.getInvokeExpr().getMethod().isNative()
 						&& !b.getMethod().getName().equals(SootMethod.staticInitializerName)){
-					defBoxes = u.getDefBoxes();
-					for (ValueBox defVB : defBoxes){
-						Value defVal = defVB.getValue();
-						if(defVal instanceof Local){
-							Local l = (Local)defVal;
-							if(!localsOfInterest.containsKey(l))
-								localsOfInterest.put(l, new HashSet<Unit>());
-							Set<Unit> preDefUnits = localsOfInterest.get(l);
-							
-							//destructive only of u is post-dominator to previous assignment
-							for(Unit preDef:preDefUnits)
-								if(postDomFinder.isDominatedBy(preDef, u))
-									preDefUnits.remove(preDef);
-							preDefUnits.add(u);
-						}
-					}					
-				}
+					Value defVal = stmt.getLeftOp();
+					if(defVal instanceof Local){
+						Local l = (Local)defVal;
+						if(!localsOfInterest.containsKey(l))
+							localsOfInterest.put(l, new HashSet<Unit>());
+						Set<Unit> preDefUnits = localsOfInterest.get(l);
+						
+						//destructive only of u is post-dominator to previous assignment
+						for(Unit preDef:preDefUnits)
+							if(postDomFinder.isDominatedBy(preDef, u))
+								preDefUnits.remove(preDef);
+						preDefUnits.add(u);
+					}
+				}					
 			}
 			
 			useBoxes = u.getUseBoxes();
@@ -112,7 +103,7 @@ public class JimpleFutureTagger {
 							
 							if(!defUnit.hasTag(DependentsTag.name))
 								defUnit.addTag(new DependentsTag());
-							((DependentsTag) defUnit.getTag(DependentsTag.name)).addDependent(useVB, u);
+							((DependentsTag) defUnit.getTag(DependentsTag.name)).addDependent(u);
 							//System.out.println("Unit "+u+"\n\tdepends on unit\n\t"+defUnit+"\n\twith local "+l);
 						}
 					}

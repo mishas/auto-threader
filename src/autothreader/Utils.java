@@ -114,7 +114,6 @@ public class Utils {
 		Local callableInstance = Jimple.v().newLocal("temp$callable" + Math.abs(rand.nextInt()), anonClass.getInterfaces().getFirst().getType());
 		body.getLocals().add(callableInstance);
 		AssignStmt assignStmt = Jimple.v().newAssignStmt(callableInstance, Jimple.v().newNewExpr(anonClass.getType()));
-		System.out.println(unit);
 		pc.insertBefore(assignStmt, unit);
 
 		SpecialInvokeExpr invokeCtorExpr = Jimple.v().newSpecialInvokeExpr(callableInstance, anonClass.getMethodByName("<init>").makeRef());
@@ -161,7 +160,6 @@ public class Utils {
 		// Assuming this is an invokeExpr. Need to do cases here...
 		InvokeExpr invokeExpr = ((InvokeStmt) unit).getInvokeExpr();
 		invokeExpr.setArg(invokeExpr.getArgs().indexOf(arg), valueLocal);
-		System.out.println(invokeExpr);
 		((InvokeStmt) unit).setInvokeExpr(invokeExpr);
 	}
 	
