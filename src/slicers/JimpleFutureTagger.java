@@ -38,13 +38,11 @@ public class JimpleFutureTagger {
 	public JimpleFutureTagger(Body b, PatchingChain<Unit> pc) {
 		this.b = b;
 		initialize();
-		onePassTag(pc);
 	}
 
 	public JimpleFutureTagger(Body b) {
 		this.b = b;
 		initialize();
-		onePassTag(this.b.getUnits());
 	}
 	private void initialize(){
 		g= new ExceptionalUnitGraph(b);
@@ -54,7 +52,7 @@ public class JimpleFutureTagger {
 	 * same as tag()
 	 * @param pc
 	 */
-	private void onePassTag(PatchingChain<Unit> pc){
+	public void onePassTag(PatchingChain<Unit> pc){
 		Map<Local,Set<Unit>> localsOfInterest = new HashMap<Local,Set<Unit>>();//variable to defining unit
 		List<ValueBox> defBoxes;
 		List<ValueBox> useBoxes;

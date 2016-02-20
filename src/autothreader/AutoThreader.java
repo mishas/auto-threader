@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Map;
 
+import slicers.JimpleFutureTagger;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Local;
@@ -49,6 +50,9 @@ public class AutoThreader {
 		@Override
 		protected void internalTransform(Body b, String phaseName, Map<String, String> options) {
 			PatchingChain<Unit> pc = b.getUnits();
+			
+			JimpleFutureTagger jft = new JimpleFutureTagger(b);
+			jft.onePassTag(pc);
 
 			if (SootMethod.staticInitializerName.equals(b.getMethod().getName())) {
 				Utils.v().addExecutorField(b, pc);
