@@ -73,7 +73,7 @@ public class AutoThreader {
 					esLocal = Utils.v().addEsLocal(b, pc);
 				}
 				Unit successor = pc.getSuccOf(u);
-				moveBack(u, pc);
+				BackMover.v().moveBack(u, pc);
 				Utils.v().toThread(b, u, successor, esLocal, pc);
 				
 				for (Unit toBoxUnit : tag.getDependents()) {
@@ -84,11 +84,6 @@ public class AutoThreader {
 			}
 			
 			System.out.println("Done processing " + b.getMethod());
-		}
-		
-		private void moveBack(Unit u, PatchingChain<Unit> pc) {
-			pc.remove(u);
-			pc.insertAfter(u, pc.getSuccOf(pc.getFirst()));  // After defining temp$es.
 		}
 	}
 }
