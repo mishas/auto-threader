@@ -100,7 +100,7 @@ public class Utils {
 		pc.insertBefore(invokeStmt, pc.getLast());
 	}
 	
-	public void toThread(Body body, Unit unit, Local esLocal, PatchingChain<Unit> pc) {
+	public void toThread(Body body, Unit unit, Unit originalAssignToLocal, Local esLocal, PatchingChain<Unit> pc) {
 		AssignStmt stmt = (AssignStmt) unit;
 		
 		SootClass anonClass = createCallableClass(body.getMethod().getDeclaringClass(), stmt); 
@@ -129,7 +129,6 @@ public class Utils {
 		AssignStmt assignFuture = Jimple.v().newAssignStmt(futureLocal, submitExpr);
 		pc.insertBefore(assignFuture, unit);
 
-		Unit originalAssignToLocal = pc.getSuccOf(unit);
 		Local local = (Local) ((AssignStmt) originalAssignToLocal).getLeftOp();
 		local.setType(submitMethod.getReturnType());
 		
