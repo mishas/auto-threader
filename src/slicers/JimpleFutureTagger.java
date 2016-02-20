@@ -15,6 +15,10 @@ import soot.Value;
 import soot.ValueBox;
 import soot.jimple.AssignStmt;
 import soot.jimple.StaticInvokeExpr;
+import soot.tagkit.AnnotationElem;
+import soot.tagkit.AnnotationTag;
+import soot.tagkit.Tag;
+import soot.tagkit.VisibilityAnnotationTag;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.MHGPostDominatorsFinder;
 import soot.toolkits.graph.pdg.HashMutablePDG;
@@ -69,6 +73,7 @@ public class JimpleFutureTagger {
 						&& (stmt.getInvokeExpr() instanceof StaticInvokeExpr)
 						&& stmt.getInvokeExpr().getArgCount() == 0
 						&& !stmt.getInvokeExpr().getMethod().isNative()
+						&& hasThreadMeAnnotation(stmt.getInvokeExpr().getMethod())
 						&& !b.getMethod().getName().equals(SootMethod.staticInitializerName)){
 					assert pc.getSuccOf(u) instanceof AssignStmt;
 					Value defVal = ((AssignStmt) pc.getSuccOf(u)).getLeftOp();
@@ -115,6 +120,19 @@ public class JimpleFutureTagger {
 			}
 		}
 		System.out.println("Done tagging.");
+	}
+	
+	private boolean hasThreadMeAnnotation(SootMethod method) {
+		VisibilityAnnotationTag vtag = (VisibilityAnnotationTag) method.getTag("VisibilityAnnotationTag");
+		if (vtag == null) {
+			return false;
+		}
+		for (AnnotationTag tag : vtag.getAnnotations()) {
+			if (tag.getType().endsWith("$ThreadMe;")) {
+				return true; 
+			}
+		}
+		return false;
 	}
 	
 	private boolean defInAllPaths(Unit defUnit, Unit u, Local l,Map<Local,Set<Unit>> localsOfInterest) {

@@ -62,7 +62,6 @@ public class AutoThreader {
 			}
 			
 			for (Unit u : new LinkedList<Unit>(pc)) {
-				System.out.println(b.getMethod().getName() + "   " + u);
 				DependentsTag tag = (DependentsTag) u.getTag(DependentsTag.name);
 				
 				if (tag == null) {

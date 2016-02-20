@@ -3,17 +3,24 @@ package test;
 import java.util.Random;
 
 public class Test1 {
+	public @interface ThreadMe {}
 	
 	public final static void main(String[] args) throws InterruptedException {
 		long start = System.currentTimeMillis();
 
 		Integer a = heavyFunc(5);  // Not going to be paralleled
 		Integer b = heavyFunc();
-		Integer c = heavyFunc();
+		Integer c = heavyFunc2();
 		System.out.println(a + " " + b + " " + c + " " + (System.currentTimeMillis() - start));
 	}
 	
+	@ThreadMe
 	public static Integer heavyFunc() throws InterruptedException {
+		Thread.sleep(1000);
+		return new Random().nextInt();
+	}
+	
+	public static Integer heavyFunc2() throws InterruptedException {
 		Thread.sleep(1000);
 		return new Random().nextInt();
 	}
