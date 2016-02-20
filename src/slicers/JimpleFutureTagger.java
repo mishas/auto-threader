@@ -9,11 +9,13 @@ import java.util.Set;
 import soot.Body;
 import soot.Local;
 import soot.PatchingChain;
+import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
 import soot.jimple.AssignStmt;
 import soot.jimple.InvokeStmt;
+import soot.jimple.StaticInvokeExpr;
 import soot.toolkits.graph.Block;
 import soot.toolkits.graph.BlockGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
@@ -68,25 +70,29 @@ public class JimpleFutureTagger {
 		
 		for(Unit u:b.getUnits()){
 			if(pc.contains(u) && u instanceof AssignStmt){//def locals are of interest here
-				defBoxes = u.getDefBoxes();
-				for (ValueBox defVB : defBoxes){
-					Value defVal = defVB.getValue();
-					if(defVal instanceof Local){
-						Local l = (Local)defVal;
-						if(!localsOfInterest.containsKey(l))
-							localsOfInterest.put(l, new HashSet<Unit>());
-						Set<Unit> preDefUnits = localsOfInterest.get(l);
-						
-						//destructive only of u is post-dominator to previous assignment
-						for(Unit preDef:preDefUnits)
-							if(postDomFinder.isDominatedBy(preDef, u))
-								preDefUnits.remove(preDef);
-						preDefUnits.add(u);
-					}
-					else{
-						//System.out.println("Non-local daf value: "+defVal);
-					}
-				}					
+				AssignStmt stmt = (AssignStmt) u;
+				if (stmt.containsInvokeExpr()
+						&& (stmt.getInvokeExpr() instanceof StaticInvokeExpr)
+						&& stmt.getInvokeExpr().getArgCount() == 0
+						&& !stmt.getInvokeExpr().getMethod().isNative()
+						&& !b.getMethod().getName().equals(SootMethod.staticInitializerName)){
+					defBoxes = u.getDefBoxes();
+					for (ValueBox defVB : defBoxes){
+						Value defVal = defVB.getValue();
+						if(defVal instanceof Local){
+							Local l = (Local)defVal;
+							if(!localsOfInterest.containsKey(l))
+								localsOfInterest.put(l, new HashSet<Unit>());
+							Set<Unit> preDefUnits = localsOfInterest.get(l);
+							
+							//destructive only of u is post-dominator to previous assignment
+							for(Unit preDef:preDefUnits)
+								if(postDomFinder.isDominatedBy(preDef, u))
+									preDefUnits.remove(preDef);
+							preDefUnits.add(u);
+						}
+					}					
+				}
 			}
 			
 			useBoxes = u.getUseBoxes();

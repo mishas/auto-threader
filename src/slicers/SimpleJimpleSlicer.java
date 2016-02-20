@@ -2,8 +2,10 @@ package slicers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import soot.Body;
 import soot.PatchingChain;
@@ -36,19 +38,21 @@ public class SimpleJimpleSlicer {
 		BlockGraph bg = pdg.getBlockGraph();
 		UnitGraph cfg = pdg.getCFG();
 		Unit a=cfg.getTails().get(0);
-		List<Unit> preds = new ArrayList<Unit>();
+		Set<Unit> delta ,preds = new HashSet<Unit>();
 		preds.add(u);
 		preds.addAll(cfg.getPredsOf(u));
 		boolean changed = true;
 		int size=0;
 		while(changed == true){
 			changed=false;
+			delta= new HashSet<Unit>();
 			for(Unit u2:preds){
-				size = preds.size();
-				preds.addAll(cfg.getPredsOf(u2));
-				if(preds.size()>size)
-					changed = true;
+				delta.addAll(cfg.getPredsOf(u2));
 			}
+			size = preds.size();
+			preds.addAll(delta);
+			if(size<preds.size())
+				changed=true;			
 		}
 		System.out.println("preds: "+preds);
 		System.out.println("Slicing done.");
