@@ -9,7 +9,7 @@ public class Test1 {
 		long start = System.currentTimeMillis();
 
 		Integer a = heavyFunc(5);  // Not going to be paralleled
-		Integer b = heavyFunc();
+		Integer b = heavyFunc(1);
 		Integer c = heavyFunc2();
 		System.out.println(a + " " + b + " " + c + " " + (System.currentTimeMillis() - start));
 	}
@@ -19,7 +19,7 @@ public class Test1 {
 		Thread.sleep(1000);
 		return new Random().nextInt();
 	}
-	
+	@ThreadMe
 	public static Integer heavyFunc2() throws InterruptedException {
 		Thread.sleep(1000);
 		return new Random().nextInt();

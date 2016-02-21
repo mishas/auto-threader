@@ -72,6 +72,7 @@ public class AutoThreader {
 					esLocal = Utils.v().addEsLocal(b, pc);
 				}
 				Unit successor = pc.getSuccOf(u);
+				//BackMover.v().moveToStart(u, pc);
 				BackMover.v().moveBack(u, pc);
 				Utils.v().toThread(b, u, successor, esLocal, pc);
 				
