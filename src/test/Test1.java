@@ -9,7 +9,7 @@ public class Test1 {
 		long start = System.currentTimeMillis();
 
 		Integer a = heavyFunc(5);  // Not going to be paralleled
-		Integer b = heavyFunc(1);
+		Integer b = heavyFunc(a);
 		Integer c = heavyFunc2();
 		System.out.println(a + " " + b + " " + c + " " + (System.currentTimeMillis() - start));
 	}
