@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.google.common.collect.Lists;
@@ -116,7 +117,10 @@ public class Utils {
 		AssignStmt assignStmt = Jimple.v().newAssignStmt(callableInstance, Jimple.v().newNewExpr(anonClass.getType()));
 		pc.insertBefore(assignStmt, unit);
 
-		SpecialInvokeExpr invokeCtorExpr = Jimple.v().newSpecialInvokeExpr(callableInstance, anonClass.getMethodByName("<init>").makeRef());
+		SpecialInvokeExpr invokeCtorExpr = Jimple.v().newSpecialInvokeExpr(
+				callableInstance,
+				anonClass.getMethodByName("<init>").makeRef(),
+				stmt.getInvokeExpr().getArgs());
 		InvokeStmt invokeCtorStmt = Jimple.v().newInvokeStmt(invokeCtorExpr);
 		pc.insertBefore(invokeCtorStmt, unit);
 
@@ -181,14 +185,14 @@ public class Utils {
 				containingClass.getName() + "$_Anonymous" + Math.abs(methodSignature.hashCode()), Modifier.PRIVATE);
 		anonClass.addInterface(callableClass);
 		anonClass.setSuperclass(Scene.v().getSootClass("java.lang.Object"));
-		anonClass.addMethod(createEmptyCtor(anonClass));
+		anonClass.addMethod(createCtor(anonClass, stmt.getInvokeExpr().getMethod().getParameterTypes()));
 		anonClass.addMethod(createCallMethod(anonClass, stmt.getInvokeExpr()));
 		
 		return anonClass;
 	}
 	
-	private SootMethod createEmptyCtor(SootClass cls) {
-		SootMethod initMethod = new SootMethod(SootMethod.constructorName, new ArrayList<Type>(), VoidType.v(), Modifier.PUBLIC);
+	private SootMethod createCtor(SootClass cls, List<Type> paramTypes) {
+		SootMethod initMethod = new SootMethod(SootMethod.constructorName, paramTypes, VoidType.v(), Modifier.PUBLIC);
 		Body body = Jimple.v().newBody(initMethod);
 		initMethod.setActiveBody(body);
 		
@@ -205,12 +209,24 @@ public class Utils {
 				Jimple.v().newSpecialInvokeExpr(body.getThisLocal(), parentClass.getMethodByName(SootMethod.constructorName).makeRef()));
 		units.add(invokeParent);
 		
+		for (int i = 0; i < paramTypes.size(); i++) {
+			Local var = Jimple.v().newLocal("_val_param$" + i, paramTypes.get(i));
+			body.getLocals().add(var);
+			IdentityStmt paramAssign = Jimple.v().newIdentityStmt(
+					var, Jimple.v().newParameterRef(paramTypes.get(i), i));
+			units.insertBefore(paramAssign, invokeParent);
+			
+			SootField field = new SootField("_val_param$" + i, paramTypes.get(i), Modifier.PRIVATE);
+			cls.addField(field);
+			AssignStmt fieldAssign = Jimple.v().newAssignStmt(Jimple.v().newInstanceFieldRef(self, field.makeRef()), var);
+			units.add(fieldAssign);
+		}
+		
 		units.add(Jimple.v().newReturnVoidStmt());
 		return initMethod;
 	}
 	
 	private SootMethod createCallMethod(SootClass cls, InvokeExpr expr) {
-		//SootMethod callMethod = new SootMethod("call", new ArrayList<Type>(), expr.getType(), Modifier.PUBLIC);
 		SootMethod callMethod = new SootMethod("call", new ArrayList<Type>(), Scene.v().getType("java.lang.Object"), Modifier.PUBLIC);
 		callMethod.addException(Scene.v().getSootClass("java.lang.Exception"));
 		Body body = Jimple.v().newBody(callMethod);
@@ -223,11 +239,21 @@ public class Utils {
 		IdentityStmt selfInit = Jimple.v().newIdentityStmt(
 				self, Jimple.v().newThisRef(cls.getType()));
 		units.add(selfInit);
+
+		InvokeExpr newExpr = (InvokeExpr) expr.clone();
+		for (int i = 0; i < newExpr.getArgCount(); i++) {
+			Local var = Jimple.v().newLocal("_val_param$" + i, newExpr.getArg(i).getType());
+			body.getLocals().add(var);
+			SootField field = cls.getFieldByName("_val_param$" + i);
+			AssignStmt assignStmt = Jimple.v().newAssignStmt(var, Jimple.v().newInstanceFieldRef(self, field.makeRef()));
+			units.add(assignStmt);
+			newExpr.setArg(i, var);
+		}
 		
-		Local retvalLocal = Jimple.v().newLocal("temp$retval", expr.getType());
+		Local retvalLocal = Jimple.v().newLocal("temp$retval", newExpr.getType());
 		body.getLocals().add(retvalLocal);
 		
-		AssignStmt assignStmt = Jimple.v().newAssignStmt(retvalLocal, expr);
+		AssignStmt assignStmt = Jimple.v().newAssignStmt(retvalLocal, newExpr);
 		Unit return_unit = Jimple.v().newReturnStmt(retvalLocal);
 		units.add(assignStmt);
 	    units.add(return_unit);

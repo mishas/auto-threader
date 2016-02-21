@@ -71,7 +71,6 @@ public class JimpleFutureTagger {
 				AssignStmt stmt = (AssignStmt) u;
 				if (stmt.containsInvokeExpr()
 						&& (stmt.getInvokeExpr() instanceof StaticInvokeExpr)
-						&& stmt.getInvokeExpr().getArgCount() == 0
 						&& !stmt.getInvokeExpr().getMethod().isNative()
 						&& hasThreadMeAnnotation(stmt.getInvokeExpr().getMethod())
 						&& !b.getMethod().getName().equals(SootMethod.staticInitializerName)){
