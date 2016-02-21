@@ -29,7 +29,10 @@ public class BackMover {
 	 * @return true iff u is moved back
 	 */
 	public boolean moveBack(Unit u, PatchingChain<Unit> pc) {
-		//TODO consider loops and conditionals
+		// TODO: consider loops and conditionals
+		return false;
+		// TODO(Ron): Remove comment out, and fix.
+		/*
 		if(depGraphs == null){
 			depGraphs = new HashMap<Unit,DirectedGraph<Value>>();
 			calculateDepGraphs(pc);
@@ -53,22 +56,8 @@ public class BackMover {
 				}
 		}
 		return isMoved;
+		*/
 	}
-	/*  Pseudo code:
-	Unit pred = pc.getPredOf(u);
-	boolean isMoved = false;
-	while (!pc.getFirst().equals(pred)) {
-		if (!(u dependsOn pred)) {
-			pc.remove(u);
-			pc.insertBefore(u, pred);
-			isMoved = true;
-		} else {
-			if (!moveBack(pred)) {
-				return isMoved;
-			}
-		}
-	}
-	*/
 
 	private void calculateDepGraphs(PatchingChain<Unit> pc) {
 		//TODO consider loops and conditionals
