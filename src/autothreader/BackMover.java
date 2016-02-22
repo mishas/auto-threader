@@ -1,6 +1,7 @@
 package autothreader;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +10,8 @@ import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
 import soot.jimple.AssignStmt;
+import soot.jimple.InvokeStmt;
+import soot.jimple.SpecialInvokeExpr;
 import util.DirectedGraph;
 
 public class BackMover {
@@ -30,33 +33,48 @@ public class BackMover {
 	 */
 	public boolean moveBack(Unit u, PatchingChain<Unit> pc) {
 		// TODO: consider loops and conditionals
-		return false;
-		// TODO(Ron): Remove comment out, and fix.
-		/*
+		
 		if(depGraphs == null){
 			depGraphs = new HashMap<Unit,DirectedGraph<Value>>();
 			calculateDepGraphs(pc);
 		}
 		
 		boolean isMoved = false;
+		HashSet<Unit> cache = new HashSet<Unit>();
 		Unit pred = pc.getPredOf(u);
 		
-		while(pred != null && !pc.getSuccOf(pc.getFirst()).equals(pred)){
-			if(!dependsOn(u,pred)){
+		while(pred != null && !pc.getSuccOf(pc.getFirst()).equals(pred) && !cache.contains(pred)){
+			if(!dependsOn(u,pred) && !initOf(pred,u)){
 				pc.remove(u);
 				pc.insertBefore(u, pred);
 				isMoved = true;
-				pred = pc.getPredOf(u);
+				cache = new HashSet<Unit>();
 			}
 			else if(!moveBack(pred,pc)){
 				return isMoved;
 			}
-				else{
-					pred = pc.getPredOf(u);
-				}
+			else{
+				cache.add(pred);
+			}
+			pred = pc.getPredOf(u);
 		}
 		return isMoved;
-		*/
+	}
+	/**
+	 * 
+	 * @param pred
+	 * @param u
+	 * @return true if pred contains init for one of u's used values
+	 */
+	private boolean initOf(Unit pred, Unit u) {
+		if(!(pred instanceof InvokeStmt) || !(((InvokeStmt)pred).getInvokeExpr() instanceof SpecialInvokeExpr))
+			return false;
+		SpecialInvokeExpr se = (SpecialInvokeExpr) ((InvokeStmt)pred).getInvokeExpr();
+		for(ValueBox vb:u.getUseBoxes()){
+			if(se.getBase() == vb.getValue())
+				return true;
+		}
+		return false;
 	}
 
 	private void calculateDepGraphs(PatchingChain<Unit> pc) {

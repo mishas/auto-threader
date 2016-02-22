@@ -13,10 +13,10 @@ public class Test1 {
 		Integer a = heavyFunc();
 		
 		int y = new Random().nextInt(10);
-		
-		Integer b = heavyFunc(x + y);
 		Integer c = heavyFunc2();
-		System.out.println(a + " " + b + " " + c + " " + (System.currentTimeMillis() - start));
+		Integer b = heavyFunc(x + y);
+		
+		System.out.println(a + " " + b + " " + c + " " +" "+(System.currentTimeMillis() - start));
 	}
 	
 	@ThreadMe
@@ -24,7 +24,7 @@ public class Test1 {
 		Thread.sleep(1000);
 		return new Random().nextInt();
 	}
-	@ThreadMe
+	//@ThreadMe
 	public static Integer heavyFunc2() throws InterruptedException {
 		Thread.sleep(1000);
 		return new Random().nextInt();
