@@ -119,4 +119,11 @@ public class DirectedGraph<T> {
 			return this.first.hashCode()+this.second.hashCode();
 		}
 	}
+	
+	public static <T> DirectedGraph<T> join(DirectedGraph<T> g1,DirectedGraph<T> g2){
+		DirectedGraph<T> g3 = g1.getCopy();
+		g3.vertices.addAll(g2.vertices);
+		g3.edges.addAll(g2.edges);
+		return g3;
+	}
 }
