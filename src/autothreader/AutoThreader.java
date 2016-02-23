@@ -1,6 +1,7 @@
 package autothreader;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ import soot.SootMethod;
 import soot.Transform;
 import soot.Unit;
 import soot.jimple.InvokeStmt;
+import soot.jimple.toolkits.annotation.logic.Loop;
+import soot.jimple.toolkits.annotation.logic.LoopFinder;
 import util.DependentsTag;
 
 public class AutoThreader {
@@ -61,6 +64,11 @@ public class AutoThreader {
 				Utils.v().addFinalizer(b, esLocal, pc);
 			}
 			
+			LoopFinder lf = new LoopFinder();
+	        lf.transform(b, phaseName, options);
+
+	        Collection<Loop> loops = lf.loops();
+			
 			for (Unit u : new LinkedList<Unit>(pc)) {
 				//System.out.println(b.getMethod().getName() + "    " + u);
 				DependentsTag tag = (DependentsTag) u.getTag(DependentsTag.name);
@@ -74,7 +82,7 @@ public class AutoThreader {
 				}
 				Unit successor = pc.getSuccOf(u);
 				//BackMover.v().moveToStart(u, pc);
-				BackMover.v().moveBack(u, pc);
+				BackMover.v().moveBack(u, pc,loops);
 				Utils.v().toThread(b, u, successor, esLocal, pc);
 				
 				for (Unit toBoxUnit : tag.getDependents()) {

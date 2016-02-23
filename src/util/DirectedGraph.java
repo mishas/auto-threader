@@ -67,9 +67,11 @@ public class DirectedGraph<T> {
 		this.vertices.remove(v);
 	}
 	public void removeAllEdges(T v){
+		HashSet<DirectedEdge<T>> toRemove = new HashSet<>();
 		for(DirectedEdge<T> e:this.edges)
 			if(e.first == v || e.second == v)
-				this.edges.remove(e);
+				toRemove.add(e);
+		this.edges.removeAll(toRemove);
 	}
 	
 	public void removeEdge(T v1,T v2){
