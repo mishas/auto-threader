@@ -75,6 +75,9 @@ public class BackMover {
 						pred = beforePredsLoop;// jump over the loop
 						continue;
 					}
+					//uLoop=predLoop
+					if(predLoop.getHead()==pred)//pred is the condition
+						return isMoved;
 				}
 			}
 			if (!dependsOn(u, pred) && !initOf(pred, u)) {

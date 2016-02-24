@@ -12,30 +12,38 @@ public class Test1 {
 		Integer d = heavyFunc(),f=heavyFunc(),g=heavyFunc(),e=heavyFunc();
 		Integer a = heavyFunc();
 		Integer b = heavyFunc2();
+		Integer k=null,j = null,i,l;
 		
 		int y = new Random().nextInt(10);
 		Integer c = heavyFunc(x + y);
 		int u=4;
 		while(u>0){
 		 //b= heavyFunc2();
-		 //c= 
-			 heavyFunc2();
+		 //c=
+			l=1;
+			l+=l;
+			l*=l;
+			l/=l;
+			 i=heavyFunc2();
+			 
 			while(u>0){
-				 heavyFunc2();
+				j=heavyFunc2();
 				u--;
 				while(u>0){
-						heavyFunc2();
+					k=heavyFunc2();
 					u--;
 					while(u>0){
-							heavyFunc2();
+							heavyFunc();
 						u--;
 						}
+					k=0;
 					}
 				}
+			System.out.println(i);
 		u--;
 		}
 		System.out.println(a + " " + b + " " + c + " " +" "+(System.currentTimeMillis() - start));
-		System.out.println(d+" "+f+" "+g+" "+e);
+		System.out.println(d+" "+f+" "+g+" "+e+" "+j+" "+k);
 	}
 	
 	@ThreadMe
@@ -43,7 +51,7 @@ public class Test1 {
 		Thread.sleep(1000);
 		return new Random().nextInt();
 	}
-	//@ThreadMe
+	@ThreadMe
 	public static Integer heavyFunc2() throws InterruptedException {
 		Thread.sleep(1000);
 		return new Random().nextInt();
