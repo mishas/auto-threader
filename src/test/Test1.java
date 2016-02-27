@@ -14,6 +14,14 @@ public class Test1 {
 		Integer b = heavyFunc2();
 		Integer k=null,j = null,i,l;
 		
+		if(x<9){
+			x++;
+			x+=10;
+		}
+		else{
+			x-=10;
+		}
+		
 		int y = new Random().nextInt(10);
 		Integer c = heavyFunc(x + y);
 		int u=4;

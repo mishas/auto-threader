@@ -17,8 +17,10 @@ import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.annotation.logic.Loop;
 import soot.tagkit.Tag;
+import soot.toolkits.graph.Block;
 import soot.toolkits.graph.LoopNestTree;
 import util.DirectedGraph;
+import util.IfThenElseTag;
 import util.LoopTag;
 
 public class BackMover {
@@ -46,12 +48,10 @@ public class BackMover {
 	public boolean moveBack(Unit u, PatchingChain<Unit> pc, Collection<Loop> loops) {
 		this.loops = loops;
 		LoopNestTree lnt = new LoopNestTree(loops);
-		// TODO: consider loops and conditionals
 
-		if (depGraphs == null) {
-			depGraphs = new HashMap<Unit, DirectedGraph<Value>>();
-			calculateDepGraphs(pc);
-		}
+		// if (depGraphs == null) {
+		depGraphs = new HashMap<Unit, DirectedGraph<Value>>();
+		calculateDepGraphs(pc);
 
 		boolean isMoved = false;
 		HashSet<Unit> cache = new HashSet<Unit>();
@@ -60,27 +60,46 @@ public class BackMover {
 		while (pred != null && !pc.getSuccOf(pc.getFirst()).equals(pred) && !cache.contains(pred)) {
 			LoopTag uTag = ((LoopTag) u.getTag(LoopTag.name));
 			LoopTag predTag = ((LoopTag) pred.getTag(LoopTag.name));
+			IfThenElseTag uIfTag = ((IfThenElseTag) u.getTag(IfThenElseTag.name));
+			IfThenElseTag predIfTag = ((IfThenElseTag) pred.getTag(IfThenElseTag.name));
 			if (uTag != null || predTag != null) {
-				if (predTag == null){
+				if (predTag == null) {
 					return isMoved;// not getting out of loop
 				}
-				//predTag!=null
+				// predTag!=null
 				Loop predLoop = predTag.getLoop();
-				if(uTag != null){
-					Loop uLoop = uTag.getLoop();
-					if (uLoop != predLoop) {
+				if (uTag != null && uTag.getLoop() != predLoop || uTag == null) {
+					if (dependsOn(u, pred))
+						return isMoved;// depends on something along the inner
+										// loop above
+					Unit beforePredsLoop = pc.getPredOf(predLoop.getHead());
+					pred = beforePredsLoop;// jump over the loop
+					continue;
+				}
+					// uLoop=predLoop
+					if (predLoop.getHead() == pred) // pred is the condition
+						return isMoved;
+			}
+			if (uIfTag != null || predIfTag != null) {
+				if (predIfTag == null) {
+					return isMoved;// not getting out of conditional
+				}
+				// predIfTag!=null
+				Block predBlock = predIfTag.getBlock();
+				if (uIfTag != null && uIfTag.getBlock() != predBlock || uIfTag == null) {
 						if (dependsOn(u, pred))
-							return isMoved;// depends on something along the inner loop above
-						Unit beforePredsLoop = pc.getPredOf(predLoop.getHead());
-						pred = beforePredsLoop;// jump over the loop
+							return isMoved;// depends on something along the
+											// conditional
+						Unit beforePredsIf = pc.getPredOf(predBlock.getHead());
+						pred = beforePredsIf;// jump over the conditional
 						continue;
-					}
-					//uLoop=predLoop
-					if(predLoop.getHead()==pred)//pred is the condition
+				}
+					// uIfTag=predIfTag
+					if (predBlock.getHead() == pred) // pred is the condition
 						return isMoved;
 				}
-			}
-			if (!dependsOn(u, pred) && !initOf(pred, u)) {
+
+			if (!dependsOn(u, pred) && !dependsOn(pred, u) && !initOf(pred, u)) {
 				pc.remove(u);
 				pc.insertBefore(u, pred);
 				isMoved = true;
@@ -205,8 +224,13 @@ public class BackMover {
 		List<ValueBox> usedBoxes = u.getUseBoxes();
 		for (ValueBox vb : usedBoxes) {
 			Value usedVal = vb.getValue();
-			if (depGraphs.get(u).isReachable(usedVal, defVal))
-				return true;
+			if (depGraphs.get(u) != null) {
+				if (depGraphs.get(u).isReachable(usedVal, defVal))
+					return true;
+			} else
+				System.out.println(1);// prevented by calculating depGraphs
+										// every call to moveBack
+
 		}
 		return false;
 	}
