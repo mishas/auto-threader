@@ -16,11 +16,9 @@ import soot.jimple.InvokeStmt;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.annotation.logic.Loop;
-import soot.tagkit.Tag;
-import soot.toolkits.graph.Block;
 import soot.toolkits.graph.LoopNestTree;
-import util.DirectedGraph;
 import util.BlockTag;
+import util.DirectedGraph;
 import util.LoopTag;
 
 public class BackMover {

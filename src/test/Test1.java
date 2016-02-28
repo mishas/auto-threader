@@ -22,8 +22,8 @@ public class Test1 {
 			x+=10;
 		}
 		System.out.println(x);
-		int y = 5;//new Random().nextInt(10);
-		Integer c = heavyFunc(7);
+		int y = new Random().nextInt(10);
+		Integer c = heavyFunc(y*Math.abs(x));
 		int u=4;
 		while(u>0){
 		 //b= heavyFunc2();

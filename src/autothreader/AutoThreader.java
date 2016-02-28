@@ -19,9 +19,8 @@ import soot.Unit;
 import soot.jimple.InvokeStmt;
 import soot.jimple.toolkits.annotation.logic.Loop;
 import soot.jimple.toolkits.annotation.logic.LoopFinder;
-import util.DependentsTag;
-import util.BlockTag;
 import util.BlockTagger;
+import util.DependentsTag;
 
 public class AutoThreader {
 	public static final void main(String[] args) throws IOException {
@@ -84,8 +83,7 @@ public class AutoThreader {
 					esLocal = Utils.v().addEsLocal(b, pc);
 				}
 				Unit successor = pc.getSuccOf(u);
-				//BackMover.v().moveToStart(u, pc);
-				BackMover.v().moveBack(u, pc,loops);
+				BackMover.v().moveBack(u, pc, loops);
 				Utils.v().toThread(b, u, successor, esLocal, pc);
 				
 				for (Unit toBoxUnit : tag.getDependents()) {
