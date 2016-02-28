@@ -16,7 +16,6 @@ import soot.jimple.InvokeStmt;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.annotation.logic.Loop;
-import soot.toolkits.graph.LoopNestTree;
 import util.BlockTag;
 import util.DirectedGraph;
 import util.LoopTag;
@@ -45,9 +44,7 @@ public class BackMover {
 	 */
 	public boolean moveBack(Unit u, PatchingChain<Unit> pc, Collection<Loop> loops) {
 		this.loops = loops;
-		LoopNestTree lnt = new LoopNestTree(loops);
 
-		// if (depGraphs == null) {
 		depGraphs = new HashMap<Unit, DirectedGraph<Value>>();
 		calculateDepGraphs(pc);
 
@@ -59,44 +56,6 @@ public class BackMover {
 			
 			BlockTag uBlockTag = ((BlockTag) u.getTag(BlockTag.name));
 			BlockTag predBlockTag = ((BlockTag) pred.getTag(BlockTag.name));
-			/*
-			 * LoopTag uTag = ((LoopTag) u.getTag(LoopTag.name));
-			LoopTag predTag = ((LoopTag) pred.getTag(LoopTag.name));if (uTag != null || predTag != null) {
-				if (predTag == null) {
-					return isMoved;// not getting out of loop
-				}
-				// predTag!=null
-				Loop predLoop = predTag.getLoop();
-				if (uTag != null && uTag.getLoop() != predLoop || uTag == null) {
-					//if (dependsOn(u, pred))
-						return isMoved;// depends on something along the inner
-										// loop above-not sure about it
-					//Unit beforePredsLoop = pc.getPredOf(predLoop.getHead());
-					//pred = beforePredsLoop;// jump over the loop
-					//continue;
-				}
-					// uLoop=predLoop
-					if (predLoop.getHead() == pred) // pred is the condition
-						return isMoved;
-			}
-			if (uIfTag != null || predIfTag != null) {
-				if (predIfTag == null) {
-					return isMoved;// not getting out of conditional
-				}
-				// predIfTag!=null
-				Block predBlock = predIfTag.getBlock();
-				if (uIfTag != null && uIfTag.getBlock() != predBlock || uIfTag == null) {
-						//if (dependsOn(u, pred))
-							return isMoved;// depends on something along the
-											// conditional-not sure about it
-						//Unit beforePredsIf = pc.getPredOf(predBlock.getHead());
-						//pred = beforePredsIf;// jump over the conditional
-						//continue;
-				}
-					// uIfTag=predIfTag
-					if (predBlock.getHead() == pred) // pred is the condition
-						return isMoved;
-				}*/
 			//check stays in the same block
 			if(uBlockTag == null || predBlockTag == null ||uBlockTag.getBlock()!=predBlockTag.getBlock())
 				return isMoved;

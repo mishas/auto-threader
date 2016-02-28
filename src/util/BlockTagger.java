@@ -5,7 +5,6 @@ import java.util.List;
 
 import soot.Body;
 import soot.Unit;
-import soot.jimple.IfStmt;
 import soot.toolkits.graph.Block;
 import soot.toolkits.graph.BlockGraph;
 import soot.toolkits.graph.ExceptionalBlockGraph;

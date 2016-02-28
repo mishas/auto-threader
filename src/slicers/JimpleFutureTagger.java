@@ -19,13 +19,11 @@ import soot.tagkit.AnnotationTag;
 import soot.tagkit.VisibilityAnnotationTag;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.MHGPostDominatorsFinder;
-import soot.toolkits.graph.pdg.HashMutablePDG;
 import util.DependentsTag;
 
 public class JimpleFutureTagger {
 
 	private Body b;
-	private HashMutablePDG pdg;
 	private ExceptionalUnitGraph g;
 	/**
 	 * Tag only Units that are in pc. The units in pc are meant to be
@@ -46,8 +44,7 @@ public class JimpleFutureTagger {
 		initialize();
 	}
 	private void initialize(){
-		g= new ExceptionalUnitGraph(b);
-		pdg = new HashMutablePDG(g);
+		g = new ExceptionalUnitGraph(b);
 	}
 	/**
 	 * Tag each assignment of variable with a set of all statements that read
@@ -62,7 +59,7 @@ public class JimpleFutureTagger {
 		List<ValueBox> useBoxes;
 		
 		//calculate dominator relations
-		MHGPostDominatorsFinder postDomFinder = new MHGPostDominatorsFinder(g);
+		MHGPostDominatorsFinder<Unit> postDomFinder = new MHGPostDominatorsFinder<Unit>(g);
 		
 		for(Unit u:b.getUnits()){
 			if(pc.contains(u) && u instanceof AssignStmt){//def locals are of interest here
