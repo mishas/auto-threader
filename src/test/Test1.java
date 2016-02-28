@@ -26,8 +26,6 @@ public class Test1 {
 		Integer c = heavyFunc(y*Math.abs(x));
 		int u=4;
 		while(u>0){
-		 //b= heavyFunc2();
-		 //c=
 			l=1;
 			l+=l;
 			l*=l;
