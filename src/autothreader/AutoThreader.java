@@ -20,6 +20,8 @@ import soot.jimple.InvokeStmt;
 import soot.jimple.toolkits.annotation.logic.Loop;
 import soot.jimple.toolkits.annotation.logic.LoopFinder;
 import util.DependentsTag;
+import util.BlockTag;
+import util.BlockTagger;
 
 public class AutoThreader {
 	public static final void main(String[] args) throws IOException {
@@ -68,6 +70,7 @@ public class AutoThreader {
 	        lf.transform(b, phaseName, options);
 
 	        Collection<Loop> loops = lf.loops();
+	        BlockTagger.tag(b);
 			
 			for (Unit u : new LinkedList<Unit>(pc)) {
 				//System.out.println(b.getMethod().getName() + "    " + u);

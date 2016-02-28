@@ -20,7 +20,7 @@ import soot.tagkit.Tag;
 import soot.toolkits.graph.Block;
 import soot.toolkits.graph.LoopNestTree;
 import util.DirectedGraph;
-import util.IfThenElseTag;
+import util.BlockTag;
 import util.LoopTag;
 
 public class BackMover {
@@ -58,23 +58,24 @@ public class BackMover {
 		Unit pred = pc.getPredOf(u);
 
 		while (pred != null && !pc.getSuccOf(pc.getFirst()).equals(pred) && !cache.contains(pred)) {
-			LoopTag uTag = ((LoopTag) u.getTag(LoopTag.name));
-			LoopTag predTag = ((LoopTag) pred.getTag(LoopTag.name));
-			IfThenElseTag uIfTag = ((IfThenElseTag) u.getTag(IfThenElseTag.name));
-			IfThenElseTag predIfTag = ((IfThenElseTag) pred.getTag(IfThenElseTag.name));
-			if (uTag != null || predTag != null) {
+			
+			BlockTag uBlockTag = ((BlockTag) u.getTag(BlockTag.name));
+			BlockTag predBlockTag = ((BlockTag) pred.getTag(BlockTag.name));
+			/*
+			 * LoopTag uTag = ((LoopTag) u.getTag(LoopTag.name));
+			LoopTag predTag = ((LoopTag) pred.getTag(LoopTag.name));if (uTag != null || predTag != null) {
 				if (predTag == null) {
 					return isMoved;// not getting out of loop
 				}
 				// predTag!=null
 				Loop predLoop = predTag.getLoop();
 				if (uTag != null && uTag.getLoop() != predLoop || uTag == null) {
-					if (dependsOn(u, pred))
+					//if (dependsOn(u, pred))
 						return isMoved;// depends on something along the inner
-										// loop above
-					Unit beforePredsLoop = pc.getPredOf(predLoop.getHead());
-					pred = beforePredsLoop;// jump over the loop
-					continue;
+										// loop above-not sure about it
+					//Unit beforePredsLoop = pc.getPredOf(predLoop.getHead());
+					//pred = beforePredsLoop;// jump over the loop
+					//continue;
 				}
 					// uLoop=predLoop
 					if (predLoop.getHead() == pred) // pred is the condition
@@ -87,18 +88,20 @@ public class BackMover {
 				// predIfTag!=null
 				Block predBlock = predIfTag.getBlock();
 				if (uIfTag != null && uIfTag.getBlock() != predBlock || uIfTag == null) {
-						if (dependsOn(u, pred))
+						//if (dependsOn(u, pred))
 							return isMoved;// depends on something along the
-											// conditional
-						Unit beforePredsIf = pc.getPredOf(predBlock.getHead());
-						pred = beforePredsIf;// jump over the conditional
-						continue;
+											// conditional-not sure about it
+						//Unit beforePredsIf = pc.getPredOf(predBlock.getHead());
+						//pred = beforePredsIf;// jump over the conditional
+						//continue;
 				}
 					// uIfTag=predIfTag
 					if (predBlock.getHead() == pred) // pred is the condition
 						return isMoved;
-				}
-
+				}*/
+			//check stays in the same block
+			if(uBlockTag == null || predBlockTag == null ||uBlockTag.getBlock()!=predBlockTag.getBlock())
+				return isMoved;
 			if (!dependsOn(u, pred) && !dependsOn(pred, u) && !initOf(pred, u)) {
 				pc.remove(u);
 				pc.insertBefore(u, pred);
